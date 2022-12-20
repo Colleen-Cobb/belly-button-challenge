@@ -1,33 +1,82 @@
-const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json";
+// read in the samples.json 
 
-// Fetch the JSON data and console log it
-d3.json(url).then(function(data) {
-  console.log(data);
-});
+function charts(selectedPatientID) {
+    d3.json("samples.json").then((data) => {
+      let plottingData = data.samples;
+      let subject = plottingData.filter(
+        (sampleobject) => sampleobject.id == selectedPatientID
+      )[0];
 
-// setup up demographic information
-fucntion demoInfo(sample)
+      console.log(subject);
+      let ids = subject.otu_ids;
+      let labels = subject.otu_labels;
+      let values = subject.sample_values;
+      
+      // Trace for the sample data
+      let trace1 = {
+        x: values.slice(0, 10).reverse(),
+        y: ids
+            .slice(0, 10)
+            .map((otuID) => `OTU ${otuID}`)
+            .reverse(),
+        text: labels.slice(0, 10).reverse(),
+        type: "bar",
+        orientation: "h",
+  };
 
-{
-    d3.json("samples.json").then((data)=> {
+        // Data trace array
+        let traceData= [trace1];
 
-        //import metadata
-        let metaData= data.metadata;
+        let layout = {
+            title: "Top 10 OTUs",
+            xaxis: {autrorange: true}, 
+            yaxis: {autorange: true},
+            margin: {t: 70, 1: 100},
+            hieght: 380,
+        };
 
-        //filter the results to population the value of one sample
-        let result=metaData.filter(sampleResult => sampleResult.id == sample);
+        Plotly.newPlot("plot", traceData, layout);
 
-        //start from the first value
-        let resultData = result[0];
+        // Create bubble chart
 
-        //clear the data for the next value
-        d3.select("#sample-metadata").html("");
+        let trace2 = {
+            x: ids, 
+            y: values, 
+            text: labels, 
+            mode: "markers", 
+            marker: {
+                color: ids, 
+                size: values, 
+                colorscale: "Plasma",
+            }, 
+        };
 
-       //obtain the key value pairs for the demographic information
-       Object.enteries(resultData).forEach(([key, vlaue]) => {
-        d3.select("#sample=metadata")
-        .append("h5").text(`${key}: ${value}`);
-       }); 
-    });
+        let traceData2= [trace2];
+
+        let layout2 = {
+            margin: { t: 0},
+            xaxis: {title: "OTU ID", 
+            hovermode: "closest",
+            width: window. width, 
+        };
+
+        Plotly.newPlot("bubble", traceData2, layout2);
+    };
+}
+
+// Initialize demographic info
+
+function demoInfo(selectedPatientID) {
+    d3.json("samples.json").then(((data)) => {
+        let metaData = data.metadata;
+        let subject= metaData.filter(
+            (sampleobject) => sampleobject.id == selectedPatientID
+        )[0];
+        let demoInfoBox = d3.select("#sample-metadata");
+        demoInfoBox.html("");
+        Object.entereis(subject).forEach(([key, value]) => {
+            demoInfoBox.append("h5").text(`${key}: ${value}`);
+        });
+
+    },
 };
-
